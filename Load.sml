@@ -6,6 +6,7 @@ use "Wire.sml";
 use "Proto.sml";
 use "Lens.sml";
 use "Parser.sml";
+use "ProtoParser.sml";
 use "StringManipulation.sml";
 use "Varint.sml";
 use "WireEncoding.sml";

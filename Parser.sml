@@ -1,5 +1,6 @@
 structure Parser =
 struct
+	exception FailureException
 	type sourceStream = (char list * char list)
 	fun makeSourceStream str = ([],String.explode str)
 	fun current (x,y) = hd y
@@ -23,13 +24,23 @@ struct
 	fun onFail f r = case r of
 				Success x => Success x
 			|	Failure x => Failure (f x)
+	fun getSuccess x = case x of
+						Success(x) => x
+					|	Failure x => raise FailureException
 	fun makeParserState str = PS(makeSourceStream str,(0,0))
 	fun withLocation (msg,PS(_,(lineno,colno))) = 
 		String.concat [msg," at line: ",Int.toString lineno]
+	fun printPS (PS((_,x),_)) = print (String.implode x)
 	fun parse (p1,str) = let val state = (makeParserState str) 
 							 val result = p1 state in
 							case result of
 								Success(x,_) => Success(x)
+							|	Failure x => Failure(withLocation(x,state))
+						 end
+	fun debugParse (p1,str) = let val state = (makeParserState str) 
+								  val result = p1 state in
+							case result of
+								Success(x,rest) => Success(x,rest)
 							|	Failure x => Failure(withLocation(x,state))
 						 end
 	fun bind (p1,f) state =
@@ -133,6 +144,9 @@ struct
 						end
 	val word = lift String.implode (many1 alpha)
 	val number = lift String.implode (many1 digit)
+	val identifier = lift (fn (x,y) => case y of
+										SOME(y) => String.concat [x,y]
+									|	NONE => x) (seq(word,maybe number))
 	val integer = 
 		let fun f x = (case Int.fromString(x) of 
 						SOME(x) => Success(x)
@@ -151,12 +165,22 @@ struct
 						transform f dottedNumber
 					end
 	fun ws p1 = wrap(many whitespace,p1,many whitespace)
+	fun force (f,msg,p) state =
+		case p state of
+			Failure x => Failure x
+		|	Success(x,rest) => if(f x)
+							   then Success(x,rest)
+							   else Failure(msg)
+	fun keyword(kw) = force(fn x => x = kw,String.concat["Keyword ",kw],word)
 end :
 sig
 	type parserState
 	datatype ('a,'b) result = Success of 'a | Failure of 'b
 	type 'a parser = parserState -> ('a * parserState,string)result
 	val parse : ('a parser * string) -> ('a, string) result
+	val debugParse : ('a parser * string) -> ('a * parserState, string) result
+	val printPS : parserState -> unit
+	val getSuccess : ('a,'b) result -> 'a
 	val bind : 'a parser * ('a -> 'b parser) -> 'b parser
 	val always : unit parser
 	val never : 'a parser
@@ -183,11 +207,12 @@ sig
 	val stringLiteral : string parser
 	val word : string parser
 	val number : string parser
+	val identifier : string parser
 	val integer : int parser
 	val dottedNumber : string parser
 	val floating : real parser
 	val ws : 'a parser -> 'a parser
 	val maybe : 'a parser -> ('a option) parser
+	val force : (('a -> bool) * string * 'a parser) -> 'a parser
+	val keyword : string -> string parser
 end
-
-fun test s = Parser.parse(Parser.sepBy(Parser.integer,Parser.ws(Parser.symbol #",")),s)
