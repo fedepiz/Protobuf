@@ -14,11 +14,9 @@ fun encodedStream x = WireEncoding.encodeWireMessage(ProtoEncoding.encodeProtoMe
 fun decodedMessage (def,x) = 
 	ProtoEncoding.decodeProtoMessage(def,WireEncoding.decodeWireMessage(x))
 
-val source2 = "message Test1 = { required int32 a = 1; }"
-val result2 = ProtoParser.parseMessages(source2)
-val msgDef2 = case result2 of
+val sourceGoogle = "message Test1 = { required int32 a = 1; }"
+val result = ProtoParser.parseMessages(sourceGoogle)
+val msgDefG = case result of
 				Parser.Success(x) => hd x
 			|	Parser.Failure _ => raise TestFailedException
-val msg2 = set aLens (150,Proto.bareMessage msgDef2)
-val en2 = encodedStream msg2
-val dec2 = decodedMessage (msgDef2,en2)
+val msgG = set aLens (150,Proto.bareMessage msgDefG)

@@ -96,6 +96,9 @@ struct
 		end
 	and decodeProtoMessage(Proto.MessageDef(name,opts,fieldDefs),wireMsg) = 
 		Proto.Message(name,opts,decodeProtoFields(fieldDefs,wireMsg))
+		
+	fun encodeMessageToStream msg = WireEncoding.encodeWireMessage(encodeProtoMessage(msg))
+	fun decodeMessageFromStream (def,stream) = decodeProtoMessage(def,WireEncoding.decodeWireMessage(stream))
 end :
 sig
 	val encodeProtoValue : Proto.protoValue -> Wire.wireValue
@@ -104,4 +107,6 @@ sig
 	val decodeProtoValue : Proto.protoType * Wire.wireValue -> Proto.protoValue option
 	val decodeProtoField : Proto.protoFieldDef * Wire.wireValue -> Proto.protoField
 	val decodeProtoMessage : Proto.protoMessageDef * Wire.wireMessage -> Proto.protoMessage
+	val encodeMessageToStream : Proto.protoMessage -> Word8.word list
+	val decodeMessageFromStream : Proto.protoMessageDef * Word8.word list -> Proto.protoMessage
 end
