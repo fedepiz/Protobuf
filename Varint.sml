@@ -20,12 +20,12 @@ struct
 	fun iShiftR(x,y) = Bits.<<(x,Word.fromInt y)
 	fun isMSBOne x = Word8.>(Word8.andb(0w128, x),0w0)
 	
-	fun encodeVarint x = let fun revEncodeVarint x =
+	fun encodeVarint x = let fun inner x =
 		if (x <= 127)
 		then [zeroMSB x]
 		else (oneMSB x)::(encodeVarint (Bits.~>>(x,0w7)))
 		in 
-			rev (revEncodeVarint x)
+			 inner x
 		end
 		
 	fun decodeVarint [] = raise VarintFormatException
@@ -43,6 +43,6 @@ struct
 	fun decodeFromStream stream = 
 		let val (ls,s1) = readWhile(isMSBOne,stream)
 			val (last,s2) = read(s1) in
-				(decodeVarint (ls @ [last]),s2)
+				(decodeVarint (rev(ls @ [last])),s2)
 		end
 end

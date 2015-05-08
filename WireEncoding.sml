@@ -21,7 +21,7 @@ struct
 	val tagI32 = 5
 	fun makeTagW(k,t) = Word8.orb(Word8.<<(k,0w3),t)
 	fun makeTag(key,typ) = makeTagW(Word8.fromInt key,Word8.fromInt typ)
-	fun encodeWireField(k,Varint(x)) = makeTag(k,tagVarint)::Varint.encodeVarint(x)
+	fun encodeWireField(k,Varint(x)) = makeTag(k,tagVarint)::(Varint.encodeVarint(x))
 	  | encodeWireField(k,I32(x)) = makeTag(k,tagI32)::Bits.fromInt32(x)
 	  | encodeWireField(k,I64(x)) = makeTag(k,tagI64)::Bits.fromInt64(x)
 	  | encodeWireField(k,Bytes(x)) = 

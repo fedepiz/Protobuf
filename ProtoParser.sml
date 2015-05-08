@@ -32,7 +32,7 @@ struct
 						   (seq(parseOptionType,parseKeyVal))
 	val parseFields = many(ws(parseField))
 	val messageBody = wrap(symbol #"{",ws(parseFields),symbol #"}")
-	val messageParser = precede(ws(keyword "message"),seq(ws(word),precede(ws(symbol #"="),messageBody)))
+	val messageParser = precede(ws(keyword "message"),seq(ws(identifier),precede(ws(symbol #"="),messageBody)))
 	val message = lift (fn (name,fields) => MessageDef(name,[],fields)) messageParser
 	val messages = many(ws(message))
 	fun replaceWithProperMessage(message,messages) =
