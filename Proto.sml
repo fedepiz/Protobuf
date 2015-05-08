@@ -71,7 +71,29 @@ struct
 	
 	fun messageDef(Message(name,opt,fields)) = MessageDef(name,opt,map fieldDef fields)
 	
+	
 	(*Debug Stuff*)
+	fun emptyMessage n = Message(n,[],[])
+	
+	fun bareValue (TDouble) = Double 0.0
+	  | bareValue (TFloat) = Float 0.0
+	  | bareValue (TInt32) = Int32 0
+	  | bareValue (TInt64) = Int64 0
+	  | bareValue (TUInt32) = UInt32 0
+	  | bareValue (TUInt64) = UInt64 0
+	  | bareValue (TFixed32) = Fixed32 0
+	  | bareValue (TFixed64) = Fixed64 0
+	  | bareValue (TSFixed32) = SFixed32 0
+	  | bareValue (TSFixed64) = SFixed64 0
+	  | bareValue (TSInt32) = SInt32 0
+	  | bareValue (TSInt64) = SInt64 0
+	  | bareValue (TBool) = Bool false
+	  | bareValue (TString) = String ""
+	  | bareValue (TBytes) = Bytes []
+	  | bareValue (TProtoMessage(MessageDef(name,_,_))) = ProtoMessageValue(emptyMessage name)
+	fun bareField(FieldDef(rule,value,name,key)) = Field(rule,bareValue(value),name,key)
+    fun bareMessage(MessageDef(name,opt,fields)) = Message(name,opt,map bareField fields)
+			
 	fun simpleMessage(x) = Message("TestMessage",[],[x])
 	fun simpleIntMessage(v,n,k) = simpleMessage(Field(Required,Int32(v),n,k))
 	val sampleMessage = simpleIntMessage(5,"test",1)

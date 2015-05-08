@@ -7,3 +7,5 @@ val msgDef = case ProtoParser.parseMessages(source) of
 val aLens = ProtoLens.intLens "a"
 val bLens = ProtoLens.stringLens "b"
 val cLens = ProtoLens.realLens "c"
+open Lens;
+val msg = chain3(setM aLens 1,setM bLens "testString", setM cLens 3.4) (Proto.emptyMessage "test1")
