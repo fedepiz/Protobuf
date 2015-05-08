@@ -20,6 +20,11 @@ struct
 						fn (x,ls) => (hd ls)::x)
 	fun +>(x,y) = compose(x,y)
 	fun <+(x,y) = compose(y,x)
+	fun getM l1 = fn x => get l1 x
+	fun setM l1 v = fn x => set l1 (v,x)
+	fun chain(f,g) = fn x => g(f(x))
+	fun chain3(f,g,h) = fn x => h(g(f(x)))
+	fun chain4(f,g,h,i) = fn x => i(h(g(f(x))))
 end :
 sig
 	type ('a,'b) lens
@@ -32,6 +37,11 @@ sig
 	val compose : ('a,'b) lens * ('b,'c) lens -> ('a,'c) lens
 	val +> : ('a,'b) lens * ('b,'c) lens -> ('a,'c) lens
 	val <+ : ('b,'c) lens * ('a,'b) lens -> ('a,'c) lens
+	val getM : ('a,'b) lens -> ('a -> 'b)
+	val setM : ('a,'b) lens -> 'b -> ('a -> 'a)
+	val chain : ('a -> 'b) * ('b -> 'c) -> ('a -> 'c)
+	val chain3 : ('a -> 'b) * ('b -> 'c) * ('c -> 'd)-> ('a -> 'd)
+	val chain4 : ('a -> 'b) * ('b -> 'c) * ('c -> 'd) * ('d -> 'e)-> ('a -> 'e)
 	val monoLens : ('a,'a) lens
 	val firstLens : ('a * 'b,'a) lens
 	val secondLens : ('a * 'b,'b) lens
