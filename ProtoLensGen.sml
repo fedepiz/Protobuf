@@ -57,10 +57,31 @@ struct
 					definedTypes,
 					structSig,
 					"\nend"]
+	fun genStructMessageDef (msgDef, specialNames)= 
+		let val name = messageDefName msgDef in
+				(String.concat["type ",name," = Proto.protoMessage"],
+				generateMessageLensCode(msgDef),
+				generateMessageLensTypeCode(msgDef,specialNames))
+			end
+	fun combineTriples f ((x1,y1,z1),(x2,y2,z2)) = 
+		(f(x1,x2),f(y1,y2),f(z1,z2))
+	fun triple x = (x,x,x)
+	fun generateStructureBodyFromMessages(msgs, specialNames) =
+		let val ls = map (fn x => genStructMessageDef(x,specialNames)) msgs 
+			fun f(x,y) = String.concat[x,"\n",y] in
+			foldl (combineTriples f) (triple "") ls
+		end
+	fun generateStructure(name, msgs) =
+		let val specialNames = map messageDefName msgs
+			val generated = generateStructureBodyFromMessages(msgs,specialNames) in
+				case generated of
+					(types,code,spec) => packUpStructure(name,types,code,spec,false)
+			end
+	fun sampleStructure msg = generateStructure("SampleStructure",[messageDef msg])
 end :
 sig
-	val generateFieldLensCode : string -> Proto.protoFieldDef -> string
-	val generateFieldLensTypeCode : string * string list -> Proto.protoFieldDef -> string
 	val generateMessageLensCode : Proto.protoMessageDef -> string
 	val generateMessageLensTypeCode : Proto.protoMessageDef * string list -> string
+	val generateStructure : string * Proto.protoMessageDef list -> string
+	val sampleStructure : Proto.protoMessage -> string
 end

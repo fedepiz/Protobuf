@@ -54,10 +54,10 @@ struct
 		let val (tag,rest) = read(stream)
 			val (fieldNum,fieldType) = tagToNumAndType(tag)
 			val (v,rest2) = (case fieldType of
-							tagVarint => decodeWireVarint(rest)
-						  | tagI32 => decodeWireInt32(rest)
-						  | tagI64 => decodeWireInt64(rest)
-						  | tagLenDelimited => decodeWireBytes(rest)
+							0 => decodeWireVarint(rest)
+						  | 5 => decodeWireInt32(rest)
+						  | 1 => decodeWireInt64(rest)
+						  | 2 => decodeWireBytes(rest)
 						  | x => raise UnknownFieldType(x)) in
 								((fieldNum,v),rest2) end
 	fun decodeWireMessage stream = process(decodeWireField,stream)
