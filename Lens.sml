@@ -22,6 +22,13 @@ struct
 	fun <+(x,y) = compose(y,x)
 	fun getM l1 = fn x => get l1 x
 	fun setM l1 v = fn x => set l1 (v,x)
+	fun getS l1 = fn x => (x,get l1 x)
+	fun setS l1 v = fn x => (set l1 (v,x),())
+	fun bind (l1,f) = fn x => 
+		case l1(x) of
+			(newState,v) => f(v) newState
+	fun pure v = fn x => (x,v)
+	val op+>> = bind
 	fun chain(f,g) = fn x => g(f(x))
 	fun chain3(f,g,h) = fn x => h(g(f(x)))
 	fun chain4(f,g,h,i) = fn x => i(h(g(f(x))))
@@ -42,6 +49,11 @@ sig
 	val chain : ('a -> 'b) * ('b -> 'c) -> ('a -> 'c)
 	val chain3 : ('a -> 'b) * ('b -> 'c) * ('c -> 'd)-> ('a -> 'd)
 	val chain4 : ('a -> 'b) * ('b -> 'c) * ('c -> 'd) * ('d -> 'e)-> ('a -> 'e)
+	val getS : ('a,'b) lens -> ('a -> 'a * 'b)
+	val setS : ('a,'b) lens -> 'b -> ('a -> 'a * unit)
+	val bind : ('s -> 's * 'a) * ('a ->('s -> 's * 'b)) -> ('s -> 's * 'b)
+	val pure : 'a -> ('s -> 's * 'a)
+	val +>> :  ('s -> 's * 'a) * ('a ->('s -> 's * 'b)) -> ('s -> 's * 'b)
 	val monoLens : ('a,'a) lens
 	val firstLens : ('a * 'b,'a) lens
 	val secondLens : ('a * 'b,'b) lens
