@@ -61,6 +61,7 @@ struct
 						  | x => raise UnknownFieldType(x)) in
 								((fieldNum,v),rest2) end
 	fun decodeWireMessage stream = process(decodeWireField,stream)
+	fun decodeWireMessageLs ls = decodeWireMessage(ListInstream.fromList ls)
 end :
 sig
 	exception UnknownFieldType of int
@@ -68,4 +69,5 @@ sig
 	val encodeWireMessage : Wire.wireMessage -> Word8.word list
 	val decodeWireField : (Word8.word, Wire.wireField) ListInstream.consumer
 	val decodeWireMessage : Word8.word ListInstream.instream -> Wire.wireMessage
+	val decodeWireMessageLs : Word8.word list -> Wire.wireMessage
 end

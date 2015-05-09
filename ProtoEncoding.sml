@@ -6,7 +6,7 @@ use "Bits.sml";
 structure ProtoEncoding =
 struct
 	exception NotImplementedException
-	exception DecodingFieldException of Proto.protoFieldDef
+	exception DecodingFieldException of Proto.protoFieldDef * Wire.wireValue * Proto.protoType
 	exception EndOfWireMessageException of Proto.protoFieldDef list
 	exception FieldNotInWireException of Proto.protoFieldDef
 	fun vectorToList vec = 
@@ -66,6 +66,9 @@ struct
 			case t of
 				Proto.TBytes => SOME(Proto.Bytes(x))
 			|	Proto.TString => SOME(Proto.String(bytesToString(x)))
+			|	Proto.TProtoMessage(msgDef) => 
+					decodeProtoValue(Proto.TProtoMessage(msgDef)
+					,Wire.WireMessage(WireEncoding.decodeWireMessageLs(x)))
 			|	_	=> NONE)
 	|	decodeProtoValue(t,Wire.WireMessage(x)) = (
 			case t of
@@ -77,7 +80,7 @@ struct
 		let val (Proto.FieldDef(opt,fieldType,name,key)) = fieldDef in
 			case decodeProtoValue(fieldType,wireVal) of
 				SOME(fieldValue) => Proto.Field(opt,fieldValue,name,key)
-			|	NONE	=>	raise DecodingFieldException(fieldDef)
+			|	NONE	=>	raise DecodingFieldException(fieldDef,wireVal,fieldType)
 		end
 		
 	and findAndDecodeFieldInWire(field,[]) = raise FieldNotInWireException(field)
