@@ -119,12 +119,14 @@ struct
 		|	String x => (x)
 		|	Bytes x => (String.concat(map Word8.toString x))
 		|	ProtoMessageValue x => messageToString x)
+	and fieldToString (Field(_,value,name,key)) = 
+		String.concat[Int.toString key,":",name," = ",valueToString value,";"]
 	and messageToString (Message(name,_,fields)) =  
-		let val strFields = map (fn x => valueToString(fieldValue x)) fields
+		let val strFields = map fieldToString fields
 			val body = fold lineBreakConcat "" strFields in
 				String.concat[name,"{\n",body,"\n}"]
 			end
-			
+	fun prettyPrintMsg x = (print (messageToString x); print "\n")
 	
 end
 (*This structure contains type checked access*)
