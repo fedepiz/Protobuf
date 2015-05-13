@@ -20,6 +20,8 @@ struct
 						fn (x,ls) => (hd ls)::x)
 	fun +>(x,y) = compose(x,y)
 	fun <+(x,y) = compose(y,x)
+	infix +>
+	infix <+
 	fun getM l1 = fn x => get l1 x
 	fun setM l1 v = fn x => set l1 (v,x)
 	fun getS l1 = fn x => (x,get l1 x)
@@ -29,9 +31,12 @@ struct
 			(newState,v) => f(v) newState
 	fun pure v = fn x => (x,v)
 	val op+>> = bind
+	infix +>>
 	fun chain(f,g) = fn x => g(f(x))
 	fun chain3(f,g,h) = fn x => h(g(f(x)))
 	fun chain4(f,g,h,i) = fn x => i(h(g(f(x))))
+	fun sequence [] x = x
+	  | sequence (f::fs) x = sequence fs (f x)
 end :
 sig
 	type ('a,'b) lens
@@ -49,6 +54,7 @@ sig
 	val chain : ('a -> 'b) * ('b -> 'c) -> ('a -> 'c)
 	val chain3 : ('a -> 'b) * ('b -> 'c) * ('c -> 'd)-> ('a -> 'd)
 	val chain4 : ('a -> 'b) * ('b -> 'c) * ('c -> 'd) * ('d -> 'e)-> ('a -> 'e)
+	val sequence : ('a -> 'a) list -> 'a -> 'a
 	val getS : ('a,'b) lens -> ('a -> 'a * 'b)
 	val setS : ('a,'b) lens -> 'b -> ('a -> 'a * unit)
 	val bind : ('s -> 's * 'a) * ('a ->('s -> 's * 'b)) -> ('s -> 's * 'b)

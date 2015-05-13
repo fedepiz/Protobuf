@@ -21,7 +21,7 @@ struct
 
 	fun protoFieldDefKey(FieldDef(_,_,_,k)) = k
 	fun protoFieldKey(Field(_,_,_,k)) = k
-	
+	fun fieldValue (Field(_,x,_,_)) = x
 	fun fieldType (Double _) = TDouble
 	  | fieldType (Float _) = TFloat
 	  | fieldType (Int32 _) = TInt32
@@ -99,6 +99,33 @@ struct
 	val sampleMessage = simpleIntMessage(5,"test",1)
 	val sampleMessage2 = Message("Sample2",[],[(Field(Required,Int32(0),"first",1)),
 											   (Field(Required,String("bla"),"second",2))])
+	fun fold _ x [] = x 
+      | fold _ _ (x::[]) = x
+	  | fold f default (x::y::ls) = fold f default (f(x,y)::ls)
+	fun lineBreakConcat (x,y) = String.concat[x,"\n",y]
+	fun valueToString value =
+		(case value of
+			Double x => (Real.toString x)
+		|	Float x => (Real.toString x)
+		|	Int32 x => (Int.toString x)
+		|	Int64 x => (Int.toString x)
+		|	UInt32 x => (Int.toString x)
+		|	UInt64 x => (Int.toString x)
+		|	SInt32 x => (Int.toString x)
+		|	SInt64 x => (Int.toString x)
+		|	Fixed32 x => (Int.toString x)
+		|	SFixed32 x => (Int.toString x)
+		|	Bool x => (Bool.toString x)
+		|	String x => (x)
+		|	Bytes x => (String.concat(map Word8.toString x))
+		|	ProtoMessageValue x => messageToString x)
+	and messageToString (Message(name,_,fields)) =  
+		let val strFields = map (fn x => valueToString(fieldValue x)) fields
+			val body = fold lineBreakConcat "" strFields in
+				String.concat[name,"{\n",body,"\n}"]
+			end
+			
+	
 end
 (*This structure contains type checked access*)
 structure ProtoAccess = 
